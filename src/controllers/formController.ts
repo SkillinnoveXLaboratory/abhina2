@@ -1,12 +1,52 @@
 import { Request, Response, NextFunction } from 'express';
 import { Volunteer, ContactMessage, Subscription, Member, AccountDeletionRequest } from '../models';
 
+const normalizeEmail = (value: unknown) => value?.toString().trim().toLowerCase() ?? '';
+const normalizePhone = (value: unknown) => value?.toString().replace(/\D/g, '') ?? '';
+
+const buildDuplicateMessage = (emailExists: boolean, phoneExists: boolean, label: string) => {
+  if (emailExists && phoneExists) {
+    return `${label} already exists with this email and phone number.`;
+  }
+  if (emailExists) {
+    return `${label} already exists with this email.`;
+  }
+  return `${label} already exists with this phone number.`;
+};
+
 // ==========================================
 // Volunteers
 // ==========================================
 export const submitVolunteer = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const volunteer = new Volunteer(req.body);
+    const email = normalizeEmail(req.body.email);
+    const phone = normalizePhone(req.body.phone);
+
+    const duplicates = await Volunteer.find({
+      $or: [{ email }, { phone }]
+    }).select('email phone').lean();
+
+    const emailExists = email ? duplicates.some((item) => normalizeEmail(item.email) == email) : false;
+    const phoneExists = phone ? duplicates.some((item) => normalizePhone(item.phone) == phone) : false;
+
+    if (emailExists || phoneExists) {
+      return res.status(409).json({
+        success: false,
+        data: null,
+        error: {
+          code: 'DUPLICATE_VOLUNTEER',
+          message: buildDuplicateMessage(emailExists, phoneExists, 'Volunteer submission'),
+          field: emailExists && phoneExists ? 'email,phone' : emailExists ? 'email' : 'phone'
+        }
+      });
+    }
+
+    const volunteer = new Volunteer({
+      ...req.body,
+      email,
+      phone,
+      status: 'pending'
+    });
     await volunteer.save();
     res.status(201).json({ success: true, data: volunteer, meta: null, error: null });
   } catch (err) {
@@ -27,6 +67,28 @@ export const deleteVolunteer = async (req: Request, res: Response, next: NextFun
   try {
     await Volunteer.findByIdAndDelete(req.params.id);
     res.json({ success: true, data: { message: 'Volunteer application deleted' }, meta: null, error: null });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const updateVolunteerStatus = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const status = req.body?.status?.toString();
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: { code: 'INVALID_STATUS', message: 'Invalid volunteer status', field: 'status' }
+      });
+    }
+
+    const volunteer = await Volunteer.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+    res.json({ success: true, data: volunteer, meta: null, error: null });
   } catch (err) {
     next(err);
   }
@@ -99,7 +161,34 @@ export const deleteSubscription = async (req: Request, res: Response, next: Next
 // ==========================================
 export const submitMember = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const member = new Member(req.body);
+    const email = normalizeEmail(req.body.email);
+    const phone = normalizePhone(req.body.phone);
+
+    const duplicates = await Member.find({
+      $or: [{ email }, { phone }]
+    }).select('email phone').lean();
+
+    const emailExists = email ? duplicates.some((item) => normalizeEmail(item.email) == email) : false;
+    const phoneExists = phone ? duplicates.some((item) => normalizePhone(item.phone) == phone) : false;
+
+    if (emailExists || phoneExists) {
+      return res.status(409).json({
+        success: false,
+        data: null,
+        error: {
+          code: 'DUPLICATE_MEMBER',
+          message: buildDuplicateMessage(emailExists, phoneExists, 'Member submission'),
+          field: emailExists && phoneExists ? 'email,phone' : emailExists ? 'email' : 'phone'
+        }
+      });
+    }
+
+    const member = new Member({
+      ...req.body,
+      email,
+      phone,
+      status: 'pending'
+    });
     await member.save();
     res.status(201).json({ success: true, data: member, meta: null, error: null });
   } catch (err) {
@@ -127,8 +216,51 @@ export const deleteMember = async (req: Request, res: Response, next: NextFuncti
 
 export const updateMemberStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const member = await Member.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const status = req.body?.status?.toString();
+    if (!['pending', 'approved', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: { code: 'INVALID_STATUS', message: 'Invalid member status', field: 'status' }
+      });
+    }
+    const member = await Member.findByIdAndUpdate(req.params.id, { status }, { new: true });
     res.json({ success: true, data: member, meta: null, error: null });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getMySubmissions = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const email = normalizeEmail(req.query.email);
+    const phone = normalizePhone(req.query.phone);
+
+    if (!email && !phone) {
+      return res.status(400).json({
+        success: false,
+        data: null,
+        error: { code: 'MISSING_FILTER', message: 'Email or phone is required', field: 'email' }
+      });
+    }
+
+    const filter: any[] = [];
+    if (email) filter.push({ email });
+    if (phone) filter.push({ phone });
+
+    const [members, volunteers] = await Promise.all([
+      Member.find({ $or: filter }).sort({ createdAt: -1 }).lean(),
+      Volunteer.find({ $or: filter }).sort({ createdAt: -1 }).lean()
+    ]);
+
+    res.json({
+      success: true,
+      data: { members, volunteers },
+      meta: {
+        total: members.length + volunteers.length
+      },
+      error: null
+    });
   } catch (err) {
     next(err);
   }

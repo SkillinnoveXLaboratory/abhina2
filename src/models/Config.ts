@@ -58,6 +58,8 @@ export interface IConfig {
   aboutImageUrl?: string;
   visionText?: string;
   missionText?: string;
+  founderMessage?: string;
+  legalRegistration?: string;
   aboutPara1?: string;
   aboutPara2?: string;
   // Bank details
@@ -170,6 +172,8 @@ const configSchema = new Schema<IConfig>({
   aboutImageUrl: { type: String, default: '' },
   visionText: { type: String, default: 'We envision an inclusive society where every individual has access to dignified livelihoods, clean habitats, health facilities, education, and legal protection.' },
   missionText: { type: String, default: 'Make charitable giving a part of everyone\'s life.' },
+  founderMessage: { type: String, default: 'Welcome to ABHINA Charitable Trust. Together, compassion can become action and action can become lasting social change.' },
+  legalRegistration: { type: String, default: 'ABHINA Charitable Trust legal and registration details will be updated by admin.' },
   aboutPara1: { type: String, default: 'ABHINA Charitable Trust was founded in 2018 with a simple belief — that charitable giving should be a part of everyone\'s life. We connect contributors, volunteers and beneficiaries across India, delivering help where it is needed most.' },
   aboutPara2: { type: String, default: 'Through 16 dedicated departments — from healthcare and education to water, environment and disaster relief — we bring hope to thousands of families every year.' },
   bankAccountName: { type: String, default: 'ABHINA Charitable Trust' },

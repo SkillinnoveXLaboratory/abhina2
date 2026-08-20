@@ -6,6 +6,7 @@ export interface IVolunteer {
   phone: string;
   region: string;
   availability: string;
+  status: string;
   skills: string[];
   interest: string[];
   reason?: string;
@@ -20,6 +21,7 @@ const volunteerSchema = new Schema<IVolunteer>({
   phone: { type: String, required: true },
   region: { type: String, required: true },
   availability: { type: String, required: true },
+  status: { type: String, default: 'pending' },
   skills: [{ type: String }],
   interest: [{ type: String }],
   reason: { type: String, default: '' },

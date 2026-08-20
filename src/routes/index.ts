@@ -73,6 +73,7 @@ import {
   submitVolunteer,
   getVolunteers,
   deleteVolunteer,
+  updateVolunteerStatus,
   submitContactMessage,
   getContactMessages,
   deleteContactMessage,
@@ -83,6 +84,7 @@ import {
   getMembers,
   deleteMember,
   updateMemberStatus,
+  getMySubmissions,
   submitAccountDeletionRequest,
   getAccountDeletionRequests,
   deleteAccountDeletionRequest
@@ -208,7 +210,9 @@ router.delete('/admin/donors/:id', adminAuth, deleteDonor);
 // Module 11: Forms Submissions
 // ==========================================
 router.post('/volunteers', submitVolunteer);
+router.get('/my-submissions', getMySubmissions);
 router.get('/admin/volunteers', adminAuth, getVolunteers);
+router.put('/admin/volunteers/:id', adminAuth, updateVolunteerStatus);
 router.delete('/admin/volunteers/:id', adminAuth, deleteVolunteer);
 
 router.post('/contact/messages', submitContactMessage);
