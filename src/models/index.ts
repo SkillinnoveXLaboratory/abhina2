@@ -17,6 +17,7 @@ import News from './News';
 import Gallery from './Gallery';
 import Member from './Member';
 import Application from './Application';
+import AccountDeletionRequest from './AccountDeletionRequest';
 
 export {
   Department,
@@ -37,5 +38,6 @@ export {
   News,
   Gallery,
   Member,
-  Application
+  Application,
+  AccountDeletionRequest
 };

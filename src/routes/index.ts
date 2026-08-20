@@ -82,7 +82,10 @@ import {
   submitMember,
   getMembers,
   deleteMember,
-  updateMemberStatus
+  updateMemberStatus,
+  submitAccountDeletionRequest,
+  getAccountDeletionRequests,
+  deleteAccountDeletionRequest
 } from '../controllers/formController';
 import { uploadImage } from '../controllers/uploadController';
 import { sendNotification } from '../controllers/notificationController';
@@ -264,6 +267,9 @@ router.post('/members', submitMember);
 router.get('/admin/members', adminAuth, getMembers);
 router.put('/admin/members/:id', adminAuth, updateMemberStatus);
 router.delete('/admin/members/:id', adminAuth, deleteMember);
+router.post('/account-deletion-requests', submitAccountDeletionRequest);
+router.get('/admin/account-deletion-requests', adminAuth, getAccountDeletionRequests);
+router.delete('/admin/account-deletion-requests/:id', adminAuth, deleteAccountDeletionRequest);
 
 // ==========================================
 // Module 12: Admin Users (credentials management)

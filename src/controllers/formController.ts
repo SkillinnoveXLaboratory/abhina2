@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Volunteer, ContactMessage, Subscription, Member } from '../models';
+import { Volunteer, ContactMessage, Subscription, Member, AccountDeletionRequest } from '../models';
 
 // ==========================================
 // Volunteers
@@ -129,6 +129,37 @@ export const updateMemberStatus = async (req: Request, res: Response, next: Next
   try {
     const member = await Member.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json({ success: true, data: member, meta: null, error: null });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// ==========================================
+// Account Deletion Requests
+// ==========================================
+export const submitAccountDeletionRequest = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const request = new AccountDeletionRequest(req.body);
+    await request.save();
+    res.status(201).json({ success: true, data: request, meta: null, error: null });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getAccountDeletionRequests = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const list = await AccountDeletionRequest.find().sort({ createdAt: -1 });
+    res.json({ success: true, data: list, meta: { total: list.length }, error: null });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const deleteAccountDeletionRequest = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    await AccountDeletionRequest.findByIdAndDelete(req.params.id);
+    res.json({ success: true, data: { message: 'Account deletion request deleted' }, meta: null, error: null });
   } catch (err) {
     next(err);
   }
