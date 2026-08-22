@@ -10,6 +10,18 @@ import apiRoutes from './routes';
 import { errorHandler } from './middleware/errorMiddleware';
 
 const app = express();
+const androidPackageName =
+  process.env.ANDROID_APP_PACKAGE || 'com.abhina.charitabletrust';
+const assetLinkFingerprints = (
+  process.env.ANDROID_SHA256_FINGERPRINTS ||
+  [
+    '59:79:02:CA:B9:12:55:2F:5C:E0:48:3E:D1:AD:05:20:8C:31:0D:7D:C7:AB:F8:96:0D:64:5F:18:7A:27:AE:64',
+    '98:93:23:4A:4A:05:D8:B9:B6:31:E6:BB:9D:76:E2:1D:D7:D8:E7:C1:A7:E8:6A:F0:06:FB:3D:BA:1C:3D:CD:F8',
+  ].join(',')
+)
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
 
 // Connect to MongoDB
 connectDB();
@@ -56,6 +68,21 @@ app.use('/api/v1', (req: Request, res: Response, next) => {
 
 // API routes
 app.use('/api/v1', apiRoutes);
+
+app.get('/.well-known/assetlinks.json', (_req: Request, res: Response) => {
+  res.set('Content-Type', 'application/json');
+  res.set('Cache-Control', 'public, max-age=3600, s-maxage=3600');
+  res.json([
+    {
+      relation: ['delegate_permission/common.handle_all_urls'],
+      target: {
+        namespace: 'android_app',
+        package_name: androidPackageName,
+        sha256_cert_fingerprints: assetLinkFingerprints,
+      },
+    },
+  ]);
+});
 
 // Serve Static Assets in production (Vite build output)
 if (process.env.NODE_ENV === 'production') {
