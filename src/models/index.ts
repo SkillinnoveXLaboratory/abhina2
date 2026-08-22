@@ -18,6 +18,7 @@ import Gallery from './Gallery';
 import Member from './Member';
 import Application from './Application';
 import AccountDeletionRequest from './AccountDeletionRequest';
+import Meeting from './Meeting';
 
 export {
   Department,
@@ -39,5 +40,6 @@ export {
   Gallery,
   Member,
   Application,
-  AccountDeletionRequest
+  AccountDeletionRequest,
+  Meeting
 };

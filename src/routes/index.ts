@@ -92,6 +92,14 @@ import {
 import { uploadImage } from '../controllers/uploadController';
 import { sendNotification } from '../controllers/notificationController';
 import { getSocialFeed } from '../controllers/socialFeedController';
+import {
+  createMeeting,
+  getMeetingByRoomId,
+  heartbeatMeetingParticipant,
+  leaveMeeting,
+  listMeetings,
+  syncMeetingParticipants,
+} from '../controllers/meetingController';
 
 const router = Router();
 
@@ -133,6 +141,12 @@ router.put('/admin/config', adminAuth, updateConfig);
 router.get('/youtube-videos', getYoutubeVideos);
 router.put('/admin/youtube-config', adminAuth, updateYoutubeConfig);
 router.get('/social-feed', getSocialFeed);
+router.get('/meetings', listMeetings);
+router.post('/meetings', createMeeting);
+router.get('/meetings/:roomId', getMeetingByRoomId);
+router.post('/meetings/:roomId/sync', syncMeetingParticipants);
+router.post('/meetings/:roomId/heartbeat', heartbeatMeetingParticipant);
+router.post('/meetings/:roomId/leave', leaveMeeting);
 
 // ==========================================
 // Module 3: Themes & Translations
